@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AgentTrace",
+  "type": "object",
+  "required": ["trace_id", "agent_name", "task_input", "steps", "final_output", "metrics"],
+  "properties": {
+    "trace_id": { "type": "string" },
+    "agent_name": { "type": "string" },
+    "task_input": { "type": "string" },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["step_index", "step_type", "timestamp_ms"],
+        "properties": {
+          "step_index": { "type": "integer" },
+          "step_type": { "type": "string", "enum": ["llm_call", "tool_call", "tool_result"] },
+          "name": { "type": "string" },
+          "input_data": { "type": "object" },
+          "output_data": { "type": "object" },
+          "latency_ms": { "type": "number" },
+          "tokens_used": { "type": "integer" }
+        }
+      }
+    },
+    "final_output": { "type": "string" },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "total_latency_ms": { "type": "number" },
+        "total_tokens": { "type": "integer" },
+        "total_tool_calls": { "type": "integer" }
+      }
+    }
+  }
+}
