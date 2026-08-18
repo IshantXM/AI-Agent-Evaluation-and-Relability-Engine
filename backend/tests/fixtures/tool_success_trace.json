@@ -1,0 +1,75 @@
+{
+  "run_id": "run-tool-001",
+  "agent_id": "research-agent",
+  "agent_version": "1.0.0",
+  "task_id": "task-tool-001",
+
+  "task": {
+    "input": "Find the refund policy."
+  },
+
+  "events": [
+    {
+      "event_id": "llm-001",
+      "event_type": "llm_call",
+      "timestamp": "2026-08-18T11:00:00Z",
+      "parent_event_id": null,
+      "status": "success",
+      "latency_ms": 100,
+      "payload": {}
+    },
+
+    {
+      "event_id": "tool-call-001",
+      "event_type": "tool_call",
+      "timestamp": "2026-08-18T11:00:01Z",
+      "parent_event_id": "llm-001",
+      "status": "success",
+      "latency_ms": 10,
+      "payload": {
+        "tool_name": "search",
+        "arguments": {
+          "query": "refund policy"
+        }
+      }
+    },
+
+    {
+      "event_id": "tool-result-001",
+      "event_type": "tool_result",
+      "timestamp": "2026-08-18T11:00:02Z",
+      "parent_event_id": "tool-call-001",
+      "status": "success",
+      "latency_ms": 1000,
+      "payload": {
+        "tool_name": "search",
+        "result": "Customers can request refunds within 30 days."
+      }
+    },
+
+    {
+      "event_id": "final-001",
+      "event_type": "final_response",
+      "timestamp": "2026-08-18T11:00:03Z",
+      "parent_event_id": "tool-result-001",
+      "status": "success",
+      "latency_ms": 100,
+      "payload": {
+        "output": "Customers can request refunds within 30 days."
+      }
+    }
+  ],
+
+  "metrics": {
+    "latency_ms": 1210,
+    "input_tokens": 50,
+    "output_tokens": 15,
+    "llm_calls": 1,
+    "tool_calls": 1,
+    "estimated_cost": 0.0003
+  },
+
+  "final_output": "Customers can request refunds within 30 days.",
+
+  "status": "success"
+}

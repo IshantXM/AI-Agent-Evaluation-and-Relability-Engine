@@ -1,0 +1,20 @@
+{
+  "run_id": "run-efficiency-001",
+  "agent_id": "research-agent",
+  "agent_version": "1.0.0",
+  "task_id": "task-efficiency-001",
+  "task": {
+    "input": "Find the refund policy."
+  },
+  "events": [],
+  "metrics": {
+    "latency_ms": 800,
+    "input_tokens": 100,
+    "output_tokens": 50,
+    "llm_calls": 1,
+    "tool_calls": 1,
+    "estimated_cost": 0.0005
+  },
+  "final_output": "Customers can request refunds within 30 days.",
+  "status": "success"
+}

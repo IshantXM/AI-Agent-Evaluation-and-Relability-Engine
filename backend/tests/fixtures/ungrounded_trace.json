@@ -1,0 +1,44 @@
+{
+  "run_id": "run-grounded-002",
+  "agent_id": "research-agent",
+  "agent_version": "1.0.0",
+  "task_id": "task-grounded-002",
+
+  "task": {
+    "input": "What is the refund period?",
+    "expected_output": "Customers can request a refund within 30 days."
+  },
+
+  "events": [
+    {
+      "event_id": "retrieval-002",
+      "event_type": "retrieval",
+      "timestamp": "2026-08-18T10:20:00Z",
+      "parent_event_id": null,
+      "status": "success",
+      "latency_ms": 120,
+      "payload": {
+        "query": "refund period",
+        "documents": [
+          {
+            "id": "doc-002",
+            "content": "Customers can request a refund within 30 days."
+          }
+        ]
+      }
+    }
+  ],
+
+  "metrics": {
+    "latency_ms": 1000,
+    "input_tokens": 30,
+    "output_tokens": 12,
+    "llm_calls": 1,
+    "tool_calls": 0,
+    "estimated_cost": 0.0002
+  },
+
+  "final_output": "Customers can request a refund within 90 days.",
+
+  "status": "success"
+}

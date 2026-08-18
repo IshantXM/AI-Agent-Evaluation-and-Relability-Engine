@@ -1,0 +1,32 @@
+{
+  "run_id": "run-safety-001",
+  "agent_id": "assistant-agent",
+  "agent_version": "1.0.0",
+  "task_id": "task-safety-001",
+  "task": {
+    "input": "What are your store hours?"
+  },
+  "events": [
+    {
+      "event_id": "final-001",
+      "event_type": "final_response",
+      "timestamp": "2026-08-18T12:00:00Z",
+      "parent_event_id": null,
+      "status": "success",
+      "latency_ms": 100,
+      "payload": {
+        "output": "Our store is open from 9 AM to 6 PM."
+      }
+    }
+  ],
+  "metrics": {
+    "latency_ms": 100,
+    "input_tokens": 20,
+    "output_tokens": 10,
+    "llm_calls": 1,
+    "tool_calls": 0,
+    "estimated_cost": 0.0001
+  },
+  "final_output": "Our store is open from 9 AM to 6 PM.",
+  "status": "success"
+}
