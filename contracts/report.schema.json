@@ -1,0 +1,339 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Aegis Reliability Report",
+  "description": "Aggregated reliability assessment of an AI agent evaluation run.",
+  "type": "object",
+
+  "required": [
+    "report_id",
+    "run_id",
+    "agent_id",
+    "agent_version",
+    "overall_score",
+    "confidence",
+    "dimensions",
+    "failures",
+    "root_causes",
+    "recommendations",
+    "regression",
+    "metadata"
+  ],
+
+  "properties": {
+    "report_id": {
+      "type": "string"
+    },
+
+    "run_id": {
+      "type": "string"
+    },
+
+    "agent_id": {
+      "type": "string"
+    },
+
+    "agent_version": {
+      "type": "string"
+    },
+
+    "overall_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+
+    "dimensions": {
+      "type": "object",
+      "required": [
+        "correctness",
+        "grounding",
+        "tool_use",
+        "safety",
+        "robustness",
+        "efficiency"
+      ],
+
+      "properties": {
+        "correctness": {
+          "$ref": "#/$defs/dimension_score"
+        },
+
+        "grounding": {
+          "$ref": "#/$defs/dimension_score"
+        },
+
+        "tool_use": {
+          "$ref": "#/$defs/dimension_score"
+        },
+
+        "safety": {
+          "$ref": "#/$defs/dimension_score"
+        },
+
+        "robustness": {
+          "$ref": "#/$defs/dimension_score"
+        },
+
+        "efficiency": {
+          "$ref": "#/$defs/dimension_score"
+        }
+      },
+
+      "additionalProperties": false
+    },
+
+    "failures": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/failure"
+      }
+    },
+
+    "root_causes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/root_cause"
+      }
+    },
+
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/recommendation"
+      }
+    },
+
+    "regression": {
+      "$ref": "#/$defs/regression"
+    },
+
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+
+  "$defs": {
+    "dimension_score": {
+      "type": "object",
+
+      "required": [
+        "score",
+        "confidence",
+        "status"
+      ],
+
+      "properties": {
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+
+        "status": {
+          "type": "string",
+          "enum": [
+            "PASS",
+            "FAIL",
+            "PARTIAL",
+            "NOT_EVALUATED"
+          ]
+        },
+
+        "evaluation_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+
+      "additionalProperties": false
+    },
+
+    "failure": {
+      "type": "object",
+
+      "required": [
+        "failure_id",
+        "severity",
+        "description"
+      ],
+
+      "properties": {
+        "failure_id": {
+          "type": "string"
+        },
+
+        "severity": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ]
+        },
+
+        "description": {
+          "type": "string"
+        },
+
+        "evaluator": {
+          "type": ["string", "null"]
+        },
+
+        "event_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+
+      "additionalProperties": false
+    },
+
+    "root_cause": {
+      "type": "object",
+
+      "required": [
+        "cause_id",
+        "category",
+        "description",
+        "confidence"
+      ],
+
+      "properties": {
+        "cause_id": {
+          "type": "string"
+        },
+
+        "category": {
+          "type": "string",
+          "enum": [
+            "reasoning",
+            "retrieval",
+            "tool_selection",
+            "tool_execution",
+            "grounding",
+            "instruction_following",
+            "safety",
+            "robustness",
+            "efficiency",
+            "unknown"
+          ]
+        },
+
+        "description": {
+          "type": "string"
+        },
+
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+
+        "event_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+
+      "additionalProperties": false
+    },
+
+    "recommendation": {
+      "type": "object",
+
+      "required": [
+        "recommendation_id",
+        "description",
+        "priority"
+      ],
+
+      "properties": {
+        "recommendation_id": {
+          "type": "string"
+        },
+
+        "description": {
+          "type": "string"
+        },
+
+        "priority": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ]
+        },
+
+        "related_failure_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+
+      "additionalProperties": false
+    },
+
+    "regression": {
+      "type": "object",
+
+      "required": [
+        "status"
+      ],
+
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "IMPROVED",
+            "REGRESSED",
+            "UNCHANGED",
+            "BASELINE",
+            "NOT_AVAILABLE"
+          ]
+        },
+
+        "previous_score": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        },
+
+        "score_delta": {
+          "type": ["number", "null"]
+        },
+
+        "previous_version": {
+          "type": ["string", "null"]
+        }
+      },
+
+      "additionalProperties": false
+    }
+  },
+
+  "additionalProperties": false
+}

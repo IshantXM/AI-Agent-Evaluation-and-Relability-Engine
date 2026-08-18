@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Aegis Evaluation Result",
+  "description": "Standardized result produced by an Aegis evaluator.",
+  "type": "object",
+  "required": [
+    "evaluation_id",
+    "run_id",
+    "evaluator",
+    "verdict",
+    "score",
+    "confidence",
+    "findings",
+    "evidence",
+    "summary"
+  ],
+  "properties": {
+    "evaluation_id": {
+      "type": "string"
+    },
+
+    "run_id": {
+      "type": "string"
+    },
+
+    "evaluator": {
+      "type": "string"
+    },
+
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "FAIL",
+        "PARTIAL",
+        "ERROR"
+      ]
+    },
+
+    "score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    },
+
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/evidence"
+      }
+    },
+
+    "summary": {
+      "type": "string"
+    },
+
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+
+  "$defs": {
+    "finding": {
+      "type": "object",
+
+      "required": [
+        "finding_id",
+        "description",
+        "severity"
+      ],
+
+      "properties": {
+        "finding_id": {
+          "type": "string"
+        },
+
+        "description": {
+          "type": "string"
+        },
+
+        "severity": {
+          "type": "string",
+          "enum": [
+            "info",
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ]
+        },
+
+        "event_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+
+      "additionalProperties": false
+    },
+
+    "evidence": {
+      "type": "object",
+
+      "required": [
+        "evidence_id",
+        "type"
+      ],
+
+      "properties": {
+        "evidence_id": {
+          "type": "string"
+        },
+
+        "type": {
+          "type": "string",
+          "enum": [
+            "trace_event",
+            "task",
+            "agent_output",
+            "tool_result",
+            "retrieval",
+            "metric",
+            "external_reference"
+          ]
+        },
+
+        "event_id": {
+          "type": ["string", "null"]
+        },
+
+        "content": {
+          "type": ["string", "null"]
+        },
+
+        "source": {
+          "type": ["string", "null"]
+        },
+
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+
+      "additionalProperties": false
+    }
+  },
+
+  "additionalProperties": false
+}

@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Aegis Agent Trace",
+  "description": "Execution trace produced by an AI agent under evaluation.",
+  "type": "object",
+  "required": [
+    "run_id",
+    "agent_id",
+    "agent_version",
+    "task_id",
+    "task",
+    "events",
+    "metrics",
+    "status"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string"
+    },
+    "agent_id": {
+      "type": "string"
+    },
+    "agent_version": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "task": {
+      "type": "object",
+      "required": ["input"],
+      "properties": {
+        "input": {},
+        "expected_output": {}
+      },
+      "additionalProperties": true
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/trace_event"
+      }
+    },
+    "metrics": {
+      "$ref": "#/$defs/metrics"
+    },
+    "final_output": {},
+    "status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "failure",
+        "partial",
+        "timeout"
+      ]
+    }
+  },
+  "$defs": {
+    "trace_event": {
+      "type": "object",
+      "required": [
+        "event_id",
+        "event_type",
+        "timestamp",
+        "status"
+      ],
+      "properties": {
+        "event_id": {
+          "type": "string"
+        },
+        "event_type": {
+          "type": "string",
+          "enum": [
+            "agent_start",
+            "llm_call",
+            "tool_call",
+            "tool_result",
+            "retrieval",
+            "decision",
+            "retry",
+            "error",
+            "final_response"
+          ]
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "parent_event_id": {
+          "type": ["string", "null"]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "started",
+            "success",
+            "failure",
+            "timeout"
+          ]
+        },
+        "latency_ms": {
+          "type": ["number", "null"],
+          "minimum": 0
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "latency_ms": {
+          "type": "number",
+          "minimum": 0
+        },
+        "input_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "output_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "llm_calls": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tool_calls": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "estimated_cost": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}
