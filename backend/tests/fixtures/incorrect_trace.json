@@ -1,0 +1,47 @@
+{
+  "run_id": "run-002",
+  "agent_id": "demo-agent",
+  "agent_version": "1.0.0",
+  "task_id": "task-002",
+
+  "task": {
+    "input": "What is 2 + 2?",
+    "expected_output": "4"
+  },
+
+  "events": [
+    {
+      "event_id": "event-001",
+      "event_type": "agent_start",
+      "timestamp": "2026-08-18T10:05:00Z",
+      "parent_event_id": null,
+      "status": "started",
+      "latency_ms": 0,
+      "payload": {}
+    },
+    {
+      "event_id": "event-002",
+      "event_type": "final_response",
+      "timestamp": "2026-08-18T10:05:01Z",
+      "parent_event_id": "event-001",
+      "status": "success",
+      "latency_ms": 1000,
+      "payload": {
+        "output": "5"
+      }
+    }
+  ],
+
+  "metrics": {
+    "latency_ms": 1000,
+    "input_tokens": 10,
+    "output_tokens": 1,
+    "llm_calls": 1,
+    "tool_calls": 0,
+    "estimated_cost": 0.0001
+  },
+
+  "final_output": "5",
+
+  "status": "success"
+}
