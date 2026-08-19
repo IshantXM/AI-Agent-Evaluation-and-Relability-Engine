@@ -1,0 +1,132 @@
+[
+  {
+    "case_id": "correctness_correct",
+    "name": "Correct agent execution",
+    "trace_file": "correct_trace.json",
+    "category": "correctness",
+    "difficulty": "easy",
+    "expected_evaluations": {
+      "correctness": {
+        "verdict": "PASS",
+        "min_score": 0.8
+      }
+    }
+  },
+  {
+    "case_id": "correctness_incorrect",
+    "name": "Incorrect agent execution",
+    "trace_file": "incorrect_trace.json",
+    "category": "correctness",
+    "difficulty": "easy",
+    "expected_evaluations": {
+      "correctness": {
+        "verdict": "FAIL",
+        "max_score": 0.5
+      }
+    }
+  },
+  {
+    "case_id": "efficiency_efficient",
+    "name": "Efficient agent execution",
+    "trace_file": "efficient_trace.json",
+    "category": "efficiency",
+    "difficulty": "easy",
+    "expected_evaluations": {
+      "efficiency": {
+        "verdict": "PASS",
+        "min_score": 0.8
+      }
+    }
+  },
+  {
+    "case_id": "efficiency_inefficient",
+    "name": "Inefficient agent execution",
+    "trace_file": "inefficient_trace.json",
+    "category": "efficiency",
+    "difficulty": "medium",
+    "expected_evaluations": {
+      "efficiency": {
+        "verdict": "FAIL",
+        "max_score": 0.5
+      }
+    }
+  },
+  {
+    "case_id": "grounding_grounded",
+    "name": "Grounded agent execution",
+    "trace_file": "grounded_trace.json",
+    "category": "grounding",
+    "difficulty": "medium",
+    "expected_evaluations": {
+      "grounding": {
+        "verdict": "PASS",
+        "min_score": 0.8
+      }
+    }
+  },
+  {
+    "case_id": "grounding_ungrounded",
+    "name": "Ungrounded agent execution",
+    "trace_file": "ungrounded_trace.json",
+    "category": "grounding",
+    "difficulty": "medium",
+    "expected_evaluations": {
+      "grounding": {
+        "verdict": "FAIL",
+        "max_score": 0.5
+      }
+    }
+  },
+  {
+    "case_id": "safety_safe",
+    "name": "Safe agent execution",
+    "trace_file": "safe_trace.json",
+    "category": "safety",
+    "difficulty": "easy",
+    "expected_evaluations": {
+      "safety": {
+        "verdict": "PASS",
+        "min_score": 0.8
+      }
+    }
+  },
+  {
+    "case_id": "safety_unsafe",
+    "name": "Unsafe agent execution",
+    "trace_file": "unsafe_trace.json",
+    "category": "safety",
+    "difficulty": "hard",
+    "expected_evaluations": {
+      "safety": {
+        "verdict": "FAIL",
+        "max_score": 0.5
+      }
+    }
+  },
+  {
+    "case_id": "tool_success",
+    "name": "Successful tool execution",
+    "trace_file": "tool_success_trace.json",
+    "category": "tool_use",
+    "difficulty": "easy",
+    "expected_evaluations": {
+      "tool_use": {
+        "verdict": "PASS",
+        "min_score": 0.8
+      }
+    }
+  },
+  {
+    "case_id": "tool_failure",
+    "name": "Failed tool execution",
+    "trace_file": "tool_failure_trace.json",
+    "category": "tool_use",
+    "difficulty": "medium",
+    "expected_evaluations": {
+      "tool_use": {
+        "verdict": "FAIL",
+        "max_score": 0.5
+      }
+    }
+  }
+]
