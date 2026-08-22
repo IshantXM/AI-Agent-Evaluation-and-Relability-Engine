@@ -10,6 +10,7 @@ from ..adversarial.models import (
     AdversarialSummary,
 )
 from ..agents.critic import CriticAgent
+from ..agents.llm_judge import LLMJudge
 from ..core.consensus_models import ConsensusResult
 from ..core.models import AgentTrace, EvaluationResult
 from ..core.report_models import ReliabilityReport
@@ -106,6 +107,7 @@ class EvaluationService:
         self,
         orchestrator: EvaluationOrchestrator,
         critic: CriticAgent | None = None,
+        llm_judge: LLMJudge | None = None,
         report_builder: ReportBuilder | None = None,
         adversarial_engine: AdversarialEngine | None = None,
         adversarial_aggregator: AdversarialAggregator | None = None,
@@ -121,6 +123,7 @@ class EvaluationService:
         self.orchestrator = orchestrator
 
         self.critic = critic or CriticAgent()
+        self.llm_judge = llm_judge
 
         self.report_builder = (
             report_builder
@@ -189,6 +192,9 @@ class EvaluationService:
             trace=trace,
             evaluators=evaluators,
         )
+
+        if self.llm_judge is not None:
+            evaluations.append(await self.llm_judge.evaluate(trace))
 
         # ========================================================
         # Stage 2: Cross-evaluator consensus
