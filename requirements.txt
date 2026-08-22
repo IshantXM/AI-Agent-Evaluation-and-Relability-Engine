@@ -3,3 +3,7 @@ uvicorn[standard]
 sqlalchemy
 pydantic
 requests
+psycopg2-binary
+python-dotenv
+pytest
+python-multipart
