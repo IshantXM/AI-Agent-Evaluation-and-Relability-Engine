@@ -4,14 +4,26 @@ import asyncio
 import json
 import urllib.request
 from typing import Any
-from uuid import uuid4
 
-from ..core.models import AgentTrace, EvaluationResult, Finding
+from pydantic import BaseModel
+
+from ..core.consensus_models import ConsensusResult
+from ..core.models import AgentTrace, EvaluationResult
 from ...config import Settings
 
 
+class LLMJudgeReview(BaseModel):
+    """Model-based review of evaluator evidence, not an evaluator dimension."""
+
+    verdict: str
+    score: float
+    confidence: float
+    summary: str
+    finding: str | None = None
+
+
 class LLMJudge:
-    """Optional OpenAI-compatible judge for task-level agent quality."""
+    """Optional model review layer for evaluator consensus and reliability."""
 
     def __init__(
         self,
@@ -28,8 +40,13 @@ class LLMJudge:
         self.model = model or "gemini-1.5-flash"
         self.timeout_seconds = timeout_seconds
 
-    async def evaluate(self, trace: AgentTrace) -> EvaluationResult:
-        prompt = self._build_prompt(trace)
+    async def review(
+        self,
+        trace: AgentTrace,
+        evaluations: list[EvaluationResult],
+        consensus: ConsensusResult,
+    ) -> LLMJudgeReview | None:
+        prompt = self._build_prompt(trace, evaluations, consensus)
         try:
             payload = await asyncio.to_thread(self._request, prompt)
             verdict = str(payload.get("verdict", "PARTIAL")).upper()
@@ -37,41 +54,19 @@ class LLMJudge:
                 verdict = "PARTIAL"
             score = self._bounded_float(payload.get("score"), 0.5)
             confidence = self._bounded_float(payload.get("confidence"), 0.5)
-            summary = str(payload.get("summary") or "LLM judge completed.")
-            finding_text = payload.get("finding")
-            findings = []
-            if finding_text:
-                findings.append(
-                    Finding(
-                        finding_id=str(uuid4()),
-                        description=str(finding_text),
-                        severity="medium" if verdict != "FAIL" else "high",
-                    )
-                )
-            return EvaluationResult(
-                evaluation_id=str(uuid4()),
-                run_id=trace.run_id,
-                evaluator="llm_judge",
+            return LLMJudgeReview(
                 verdict=verdict,
                 score=score,
                 confidence=confidence,
-                findings=findings,
-                evidence=[],
-                summary=summary,
-                metadata={"judge_model": self.model, "judge_source": "llm"},
+                summary=str(payload.get("summary") or "LLM review completed."),
+                finding=str(payload["finding"]) if payload.get("finding") else None,
             )
         except Exception as exc:
-            return EvaluationResult(
-                evaluation_id=str(uuid4()),
-                run_id=trace.run_id,
-                evaluator="llm_judge",
+            return LLMJudgeReview(
                 verdict="ERROR",
                 score=0.0,
                 confidence=0.0,
-                findings=[],
-                evidence=[],
-                summary=f"LLM judge unavailable: {type(exc).__name__}: {exc}",
-                metadata={"judge_model": self.model, "judge_source": "llm", "error": True},
+                summary=f"LLM review unavailable: {type(exc).__name__}: {exc}",
             )
 
     def _request(self, prompt: str) -> dict[str, Any]:
@@ -111,7 +106,11 @@ class LLMJudge:
         return result
 
     @staticmethod
-    def _build_prompt(trace: AgentTrace) -> str:
+    def _build_prompt(
+        trace: AgentTrace,
+        evaluations: list[EvaluationResult],
+        consensus: ConsensusResult,
+    ) -> str:
         events = [
             {
                 "type": event.event_type,
@@ -126,6 +125,10 @@ class LLMJudge:
                 "final_output": trace.final_output,
                 "run_status": trace.status,
                 "events": events,
+                "evaluator_results": [
+                    result.model_dump(mode="json") for result in evaluations
+                ],
+                "deterministic_consensus": consensus.model_dump(mode="json"),
             },
             ensure_ascii=True,
         )

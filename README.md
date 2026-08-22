@@ -202,7 +202,7 @@ reports continue to stream remotely.
 2. Upload a `.json` or `.jsonl` agent trace from the dashboard.
 3. Review the six evaluator dimensions, failures, reliability score, and regression data.
 4. Open the Scenario Generator tab to create realistic and adversarial test cases.
-5. Configure the optional LLM judge to compare model-based judgment with deterministic evaluators.
+5. Configure the optional Gemini judge to review deterministic evaluator evidence and influence consensus/reliability.
 
 This demonstrates trace ingestion, scenario metadata generation, evaluator
 analysis, safety testing, failure attribution, and reliability scorecards from

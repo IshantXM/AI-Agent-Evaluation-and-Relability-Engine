@@ -10,7 +10,7 @@ from ..adversarial.models import (
     AdversarialSummary,
 )
 from ..judges.critic import CriticAgent
-from ..judges.llm_judge import LLMJudge
+from ..judges.llm_judge import LLMJudge, LLMJudgeReview
 from ..core.consensus_models import ConsensusResult
 from ..core.models import AgentTrace, EvaluationResult
 from ..core.report_models import ReliabilityReport
@@ -193,9 +193,6 @@ class EvaluationService:
             evaluators=evaluators,
         )
 
-        if self.llm_judge is not None:
-            evaluations.append(await self.llm_judge.evaluate(trace))
-
         # ========================================================
         # Stage 2: Cross-evaluator consensus
         # ========================================================
@@ -203,6 +200,15 @@ class EvaluationService:
         consensus = self.critic.evaluate(
             evaluations
         )
+
+        judge_review: LLMJudgeReview | None = None
+        if self.llm_judge is not None:
+            judge_review = await self.llm_judge.review(
+                trace=trace,
+                evaluations=evaluations,
+                consensus=consensus,
+            )
+            consensus = self._apply_judge_review(consensus, judge_review)
 
         # ========================================================
         # Stage 3: Adversarial evaluation
@@ -272,6 +278,39 @@ class EvaluationService:
             adversarial_summary=adversarial_summary,
             reliability=reliability,
             report=report,
+        )
+
+    @staticmethod
+    def _apply_judge_review(
+        consensus: ConsensusResult,
+        review: LLMJudgeReview,
+    ) -> ConsensusResult:
+        if review.verdict == "ERROR":
+            consensus.metadata["llm_judge"] = {
+                "status": "UNAVAILABLE",
+                "summary": review.summary,
+            }
+            return consensus
+
+        fused_score = (consensus.consensus_score * 0.70) + (review.score * 0.30)
+        fused_confidence = (consensus.confidence * 0.70) + (review.confidence * 0.30)
+        metadata = dict(consensus.metadata)
+        metadata["llm_judge"] = {
+            "status": "APPLIED",
+            "model": "configured",
+            "verdict": review.verdict,
+            "score": review.score,
+            "confidence": review.confidence,
+            "summary": review.summary,
+            "finding": review.finding,
+            "weight": 0.30,
+        }
+        return consensus.model_copy(
+            update={
+                "consensus_score": round(fused_score, 4),
+                "confidence": round(fused_confidence, 4),
+                "metadata": metadata,
+            }
         )
 
     # ============================================================
