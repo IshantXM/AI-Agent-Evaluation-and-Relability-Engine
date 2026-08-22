@@ -17,13 +17,9 @@ Why this file exists:
 
 from __future__ import annotations
 
-from pathlib import Path
-
-from dotenv import load_dotenv
 from typing import Any
 
-load_dotenv(Path(__file__).resolve().parent.parent / ".env")
-
+from .config import settings
 from .evaluation.core.models import (
     AgentTrace,
     TaskDefinition,
@@ -56,7 +52,7 @@ _registry.register(EfficiencyEvaluator())
 _orchestrator = EvaluationOrchestrator(_registry)
 _service = EvaluationService(
     orchestrator=_orchestrator,
-    llm_judge=configured_llm_judge(),
+    llm_judge=configured_llm_judge(settings),
 )
 
 

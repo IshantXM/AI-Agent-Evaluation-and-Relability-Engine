@@ -1,5 +1,3 @@
-import os
-
 from fastapi import FastAPI, Depends, Body, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import desc
@@ -9,21 +7,16 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 
 from . import models, database
+from .config import settings
 from .evaluation_bootstrap import build_agent_trace, evaluate_trace
 
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(title="Aegis Platform API", version="1.0.0")
 
-cors_origins = [
-    origin.strip()
-    for origin in os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
-    if origin.strip()
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=cors_origins,
+    allow_origins=list(settings.cors_origins),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

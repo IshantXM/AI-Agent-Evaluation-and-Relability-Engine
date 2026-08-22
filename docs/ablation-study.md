@@ -1,47 +1,88 @@
 # Ablation Study Methodology
 
-This subsystem performs a leave-one-evaluator-out experiment. It first runs
-the selected evaluator list as the baseline, then reruns the same trace once
-for each evaluator with exactly that evaluator removed.
+## Purpose
 
-## Scores and impact
+Aegis uses ablation to measure how much each evaluator contributes to a final
+reliability score. This is a diagnostic experiment for engineering decisions:
+it helps a team find redundant, high-value, or unstable evaluators before
+changing the production evaluation policy.
 
-The score is the arithmetic mean of valid evaluator scores. For a case,
-`score_delta = ablated_score - baseline_score`; a negative delta means that
-removing the evaluator reduced the score. Relative impact is
-`(ablated_score - baseline_score) / baseline_score`.
+## Experimental design
 
-Relative impact is `None` when the baseline is zero because the denominator is
-zero and the ratio is mathematically undefined. Such a case can still retain
-its absolute score delta, but it is excluded from relative-impact ranking.
+For one `AgentTrace`, `AblationRunner` executes:
 
-## Failures
+1. A baseline with the selected evaluator set.
+2. One case per evaluator, with exactly that evaluator removed.
+3. Optional repeated trials for every case.
 
-An evaluator execution error in an ablated run produces a `FAILED` case. The
-case has no ablated score, delta, or impact direction, and preserves the error
-type and message. Failed cases do not affect the most- or least-impactful
-conclusions. Baseline evaluator errors are excluded from the baseline mean to
-preserve the existing evaluation behavior; an ablation case that has no valid
-results fails rather than becoming a zero score.
+Cases can run concurrently with a configurable `max_concurrency`, or
+sequentially when evaluator implementations have stateful external
+dependencies.
 
-## Repeated trials
+The implementation lives in
+`backend/app/evaluation/ablation/{models,metrics,runner}.py`; its public API is
+exported from `backend/app/evaluation/ablation/__init__.py`.
 
-`trials` defaults to one. When it is greater than one, each leave-one-out case
-is executed repeatedly. The case stores each trial result and reports the
-mean, population standard deviation, minimum, and maximum ablated score.
-These descriptive statistics do not establish confidence intervals,
-statistical significance, or causal significance.
+## Running an experiment
 
-## Reproducibility metadata
+The runner is currently an application/library API rather than a public HTTP
+endpoint. A minimal experiment is:
 
-Reports record the evaluator list and order, removed evaluators, methodology
-name and version, parallel/sequential mode, concurrency limit, trial count,
-and adversarial scenario count. No random seed is claimed because this
-pipeline does not currently control a random-number generator.
+```python
+from backend.app.evaluation.ablation import AblationRunner
+
+report = await AblationRunner(orchestrator).run(
+		trace,
+		evaluators=["correctness", "grounding", "tool_use", "safety"],
+		trials=3,
+		parallel=True,
+		max_concurrency=4,
+)
+```
+
+The test suite provides deterministic examples in
+`backend/tests/evaluation/test_ablation_runner.py` and
+`backend/tests/evaluation/test_ablation_metrics.py`.
+
+## Metrics and interpretation
+
+The score is the arithmetic mean of valid evaluator scores. For each removed
+evaluator:
+
+- `score_delta = ablated_score - baseline_score`
+- Relative impact is `score_delta / baseline_score` when the baseline is not zero.
+- A negative delta means the removed evaluator was contributing positively to
+	the measured score.
+- A positive delta means the evaluator was lowering the measured score or
+	exposing disagreement.
+
+The report ranks completed cases by absolute impact. Relative impact is
+excluded when the baseline is zero because the ratio is undefined.
+
+## Failure handling
+
+Evaluator errors create a `FAILED` case with the original error type and
+message. Failed cases do not influence impact rankings. Baseline evaluator
+errors are excluded from the baseline mean, matching the standard orchestrator
+behavior; an ablated case with no valid results fails instead of silently
+becoming a zero score.
+
+## Repeated trials and metadata
+
+`trials` defaults to one. For repeated trials, each case reports mean score,
+population standard deviation, minimum, and maximum. These are descriptive
+statistics, not confidence intervals or significance tests.
+
+Each report records evaluator order, removed evaluators, methodology/version,
+execution mode, concurrency limit, trial count, and adversarial scenario
+count. The current implementation does not claim a random seed because it
+does not control a random-number generator.
 
 ## Limitations
 
-This is a diagnostic comparison, not a causal experiment. It uses one trace
-unless callers provide repeated trials, does not model evaluator dependence,
-does not calculate inferential statistics, and does not guarantee that
-parallel execution is equivalent for stateful external evaluators.
+This is not a causal experiment. Results depend on the selected trace, the
+evaluator scoring rules, and any external state used by evaluators. A single
+trace does not represent production traffic, evaluator dependence is not
+modeled, and parallel execution may differ from sequential execution for
+stateful integrations. Teams should compare multiple representative traces
+and review the raw evaluator evidence before removing an evaluator.

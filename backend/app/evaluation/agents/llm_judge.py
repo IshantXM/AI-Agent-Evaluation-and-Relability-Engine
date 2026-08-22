@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import json
-import os
 import urllib.request
 from typing import Any
 from uuid import uuid4
 
 from ..core.models import AgentTrace, EvaluationResult, Finding
+from ...config import Settings
 
 
 class LLMJudge:
@@ -135,12 +135,11 @@ class LLMJudge:
             return default
 
 
-def configured_llm_judge() -> LLMJudge | None:
-    api_key = os.getenv("AEGIS_JUDGE_API_KEY")
-    if not api_key:
+def configured_llm_judge(settings: Settings) -> LLMJudge | None:
+    if not settings.judge_api_key:
         return None
     return LLMJudge(
-        api_key=api_key,
-        base_url=os.getenv("AEGIS_JUDGE_BASE_URL"),
-        model=os.getenv("AEGIS_JUDGE_MODEL"),
+        api_key=settings.judge_api_key,
+        base_url=settings.judge_base_url,
+        model=settings.judge_model,
     )
