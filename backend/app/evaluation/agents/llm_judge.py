@@ -21,8 +21,11 @@ class LLMJudge:
         timeout_seconds: float = 20.0,
     ) -> None:
         self.api_key = api_key
-        self.base_url = (base_url or "https://api.openai.com/v1").rstrip("/")
-        self.model = model or "gpt-4o-mini"
+        self.base_url = (
+            base_url
+            or "https://generativelanguage.googleapis.com/v1beta/openai"
+        ).rstrip("/")
+        self.model = model or "gemini-1.5-flash"
         self.timeout_seconds = timeout_seconds
 
     async def evaluate(self, trace: AgentTrace) -> EvaluationResult:

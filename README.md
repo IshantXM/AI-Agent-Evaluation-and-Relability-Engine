@@ -120,7 +120,7 @@ Follow these steps to run the complete system locally:
 ### 1. Prerequisites
 - **Python 3.11+** installed
 - **Node.js 18+** & npm installed
-- **PostgreSQL** (or SQLite zero-config fallback)
+- **PostgreSQL 16+**
 
 ---
 
@@ -137,7 +137,7 @@ pip install -r ../requirements.txt
 # Copy example env file
 cp .env.example .env
 
-# Edit .env with your PostgreSQL credentials (or leave default for local SQLite):
+# Edit .env with your PostgreSQL credentials:
 # DATABASE_URL=postgresql://postgres:password@localhost:5432/Aegis
 # CORS_ORIGINS=http://localhost:3000
 
@@ -148,17 +148,16 @@ Backend API will be live at:
 - **API Base**: `http://127.0.0.1:8000`
 - **Interactive Swagger Docs**: `http://127.0.0.1:8000/docs`
 
-### Optional LLM Judge
+### Optional Gemini LLM Judge
 
-The built-in evaluators remain deterministic. To add a task-level LLM judge,
-configure an OpenAI-compatible chat-completions endpoint before starting the
-backend:
+The built-in evaluators remain deterministic. To add a task-level Gemini judge,
+configure Gemini's OpenAI-compatible chat-completions endpoint before starting
+the backend:
 
 ```bash
 AEGIS_JUDGE_API_KEY=your-key
-AEGIS_JUDGE_MODEL=gpt-4o-mini
-# Optional for compatible providers:
-AEGIS_JUDGE_BASE_URL=https://api.openai.com/v1
+AEGIS_JUDGE_MODEL=gemini-1.5-flash
+AEGIS_JUDGE_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
 ```
 
 The judge result is added to consensus and the saved evaluation record. If no

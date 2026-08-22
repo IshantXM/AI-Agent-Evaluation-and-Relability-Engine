@@ -25,9 +25,15 @@ def _csv(value: str) -> tuple[str, ...]:
 
 
 settings = Settings(
-    database_url=os.getenv("DATABASE_URL", "sqlite:///./aegis_traces.db"),
+    database_url=os.getenv(
+        "DATABASE_URL",
+        "postgresql://postgres:postgres@localhost:5432/aegis",
+    ),
     cors_origins=_csv(os.getenv("CORS_ORIGINS", "http://localhost:3000")),
     judge_api_key=os.getenv("AEGIS_JUDGE_API_KEY"),
-    judge_model=os.getenv("AEGIS_JUDGE_MODEL", "gpt-4o-mini"),
-    judge_base_url=os.getenv("AEGIS_JUDGE_BASE_URL", "https://api.openai.com/v1").rstrip("/"),
+    judge_model=os.getenv("AEGIS_JUDGE_MODEL", "gemini-1.5-flash"),
+    judge_base_url=os.getenv(
+        "AEGIS_JUDGE_BASE_URL",
+        "https://generativelanguage.googleapis.com/v1beta/openai",
+    ).rstrip("/"),
 )
