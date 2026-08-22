@@ -9,8 +9,8 @@ from ..adversarial.models import (
     AdversarialScenario,
     AdversarialSummary,
 )
-from ..agents.critic import CriticAgent
-from ..agents.llm_judge import LLMJudge
+from ..judges.critic import CriticAgent
+from ..judges.llm_judge import LLMJudge
 from ..core.consensus_models import ConsensusResult
 from ..core.models import AgentTrace, EvaluationResult
 from ..core.report_models import ReliabilityReport

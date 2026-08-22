@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from ..agents.critic import CriticAgent
+from ..judges.critic import CriticAgent
 from ..core.models import AgentTrace, EvaluationResult
 from ..core.consensus_models import ConsensusResult
 from .orchestrator import EvaluationOrchestrator

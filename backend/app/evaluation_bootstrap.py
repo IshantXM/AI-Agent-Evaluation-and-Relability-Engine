@@ -33,7 +33,7 @@ from .evaluation.evaluators.grounding import GroundingEvaluator
 from .evaluation.evaluators.robustness import RobustnessEvaluator
 from .evaluation.evaluators.safety import SafetyEvaluator
 from .evaluation.evaluators.tool_use import ToolUseEvaluator
-from .evaluation.agents.llm_judge import configured_llm_judge
+from .evaluation.judges.llm_judge import configured_llm_judge
 from .evaluation.orchestration import EvaluationOrchestrator, EvaluationService
 
 # ------------------------------------------------------------------
@@ -213,3 +213,8 @@ async def evaluate_trace(
         previous_score=previous_score,
         previous_version=previous_version,
     )
+
+
+def get_evaluation_orchestrator() -> EvaluationOrchestrator:
+    """Return the application-composed orchestrator for offline tools."""
+    return _orchestrator

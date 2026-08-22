@@ -68,8 +68,6 @@ class AblationCaseResult(BaseModel):
 
     relative_impact: float | None = None
 
-    relative_impact: float | None = None
-
     impact_direction: ImpactDirection | None = None
 
     baseline_evaluator_count: int = Field(ge=0)
@@ -143,58 +141,6 @@ class AblationTrialResult(BaseModel):
                 "FAILED trials require an error and no score."
             )
         return self
-
-    @model_validator(mode="after")
-    def validate_status_fields(self) -> "AblationCaseResult":
-        if self.status == "COMPLETED":
-            if (
-                self.ablated_score is None
-                or self.score_delta is None
-                or self.relative_impact is None
-                or self.impact_direction is None
-            ):
-                raise ValueError(
-                    "COMPLETED ablation results require scores, impacts, "
-                    "and impact direction."
-                )
-
-        if self.status == "FAILED":
-            if (
-                self.ablated_score is not None
-                or self.score_delta is not None
-                or self.relative_impact is not None
-                or self.impact_direction is not None
-                or not self.error
-            ):
-                raise ValueError(
-                    "FAILED ablation results require an error and no "
-                    "completed-result fields."
-                )
-
-        return self
-
-
-class AblationTrialResult(BaseModel):
-    """Result of one execution of an ablation case."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    trial: int = Field(ge=1)
-    status: AblationStatus
-    score: float | None = Field(default=None, ge=0.0, le=1.0)
-    evaluation_ids: list[str] = Field(default_factory=list)
-    error: str | None = None
-
-    @model_validator(mode="after")
-    def validate_trial_fields(self) -> "AblationTrialResult":
-        if self.status == "COMPLETED" and self.score is None:
-            raise ValueError("COMPLETED trials require a score.")
-        if self.status == "FAILED" and (self.score is not None or not self.error):
-            raise ValueError(
-                "FAILED trials require an error and no score."
-            )
-        return self
-
 
 class AblationReport(BaseModel):
     """

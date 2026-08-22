@@ -17,11 +17,18 @@
 
 ---
 
-## 🎯 Problem Context & Vision
+## What Aegis Actually Does
 
-Autonomous AI agents fail on up to **70% of real-world tasks** due to tool-call loops, hallucinated confidence, destructive actions, and silent goal drift. Most teams only test agents against a handful of manual prompts.
+Aegis evaluates structured execution traces produced by an external agent or
+application. It does not launch arbitrary agents, execute tools on their
+behalf, or provide a sandbox. The trace collector is an SDK utility for code
+that wants to record an execution; the API accepts already-produced traces.
 
-**Aegis** serves as **Continuous Integration (CI) for Autonomous Agents**: it continuously captures execution traces, runs adversarial perturbations, categorizes failure modes deterministically, and generates versioned reliability scorecards.
+Given a trace, Aegis normalizes and persists it, runs six deterministic
+evaluators, optionally asks a configured Gemini judge for a task-level review,
+calculates consensus and reliability, and builds a versioned report. Benchmark,
+adversarial, ablation, and attribution components are available as separate
+evaluation subsystems.
 
 ---
 
@@ -30,7 +37,7 @@ Autonomous AI agents fail on up to **70% of real-world tasks** due to tool-call 
 | Problem Statement Pillar | Aegis Implementation | Key Modules |
 | :--- | :--- | :--- |
 | **1. Scenario Generation Engine** | Generates realistic and adversarial test scenarios across task domains, prompt perturbations, and edge cases. | `app.evaluation.adversarial.engine`, `app.evaluation.benchmark` |
-| **2. Sandboxed Replay Harness** | Captures execution traces with `TraceCollector`, enabling sub-millisecond replay and deterministic offline evaluations. | `app.tracing.collector`, `contracts/trace.schema.json` |
+| **2. Trace Ingestion and Analysis** | Captures or accepts structured traces and evaluates them offline; it is not a sandbox or replay executor. | `app.tracing.collector`, `contracts/trace.schema.json` |
 | **3. Failure Mode Classifier** | Automatically classifies failures into actionable taxonomies (*Tool Loops, Hallucination, Schema Mismatch, Goal Drift*). | `app.evaluation.attribution.engine`, `app.evaluation.attribution.rules` |
 | **4. Destructive Action & Safety Tester** | Evaluates agent willingness to execute irreversible actions under ambiguous instructions and prompt injections. | `app.evaluation.evaluators.safety`, `app.evaluation.evaluators.robustness` |
 | **5. Reliability Scorecard & Regression Tracker** | Generates comprehensive reliability scorecards and tracks version-over-version regression deltas (`v1.0` vs `v2.0`). | `app.evaluation.orchestration.report_builder`, `app.evaluation.reliability.regression` |
@@ -170,7 +177,7 @@ deterministic evaluators.
 
 ```bash
 # In a new terminal, navigate to the frontend directory
-cd frontend-utk
+cd frontend
 
 # Install dependencies
 npm install
@@ -197,17 +204,52 @@ reports continue to stream remotely.
 4. Open the Scenario Generator tab to create realistic and adversarial test cases.
 5. Configure the optional LLM judge to compare model-based judgment with deterministic evaluators.
 
-This directly demonstrates scenario generation, trace replay, failure
-classification, safety testing, and reliability scorecards from the hackathon
-problem statement.
+This demonstrates trace ingestion, scenario metadata generation, evaluator
+analysis, safety testing, failure attribution, and reliability scorecards from
+the hackathon problem statement.
+
+### Documentation
+
+- [Architecture](docs/architecture.md)
+- [Evaluation methodology](docs/evaluation-methodology.md)
+- [Evaluation contract](docs/evaluation-contract.md)
+- [Benchmarks](docs/benchmarks.md)
+- [Adversarial testing](docs/adversarial-testing.md)
+- [Ablation study](docs/ablation-study.md)
+- [Reliability](docs/reliability.md)
+- [Development](docs/development.md)
+- [Contributing](docs/contributing.md)
+
+### Repository Structure
+
+```text
+backend/app/       FastAPI boundary, tracing, contracts, and evaluation engine
+backend/tests/     Unit, integration, reliability, benchmark, and experiment tests
+contracts/         JSON interchange schemas
+docs/              Architecture and methodology documentation
+frontend/          Next.js dashboard
+scripts/           Thin command-line entry points over application services
+data/              Reserved for generated or user-provided datasets
+```
+
+### Limitations
+
+The current prototype evaluates supplied traces; it does not run target
+agents. Adversarial scenarios are generated as metadata and only influence a
+run when explicitly passed to the evaluation service. Attribution is available
+as a subsystem but is not yet included in the persisted API report. WebSocket
+updates currently cover trace ingestion and report readiness rather than every
+agent step. Scores are diagnostic evidence, not a guarantee of production
+correctness or safety.
 
 ---
 
 ### 4. Run Test Suite & Simulations
 
-#### A. Run All Backend Unit Tests (152 Tests)
+#### A. Run All Backend Tests
 ```bash
-python -m pytest backend/tests/
+python -m pytest -q
+python -m compileall backend
 ```
 
 #### B. Run Simulated Agent Execution
@@ -216,10 +258,21 @@ python -m pytest backend/tests/
 python run_mock_agent.py
 ```
 This will:
-1. Simulate an autonomous coding agent with real-time spans.
+1. Simulate an external agent trace with real-time spans.
 2. Automatically calculate exact latency, tokens, tool calls, and costs.
 3. Ingest the trace and run the full evaluation engine.
 4. Broadcast live events to the dashboard at `http://localhost:3000`.
+
+#### C. Run the Service Scripts
+
+```bash
+python scripts/run_evaluation.py backend/tests/fixtures/traces/correct_trace.json
+python scripts/run_benchmark.py
+python scripts/run_ablation.py backend/tests/fixtures/traces/correct_trace.json
+```
+
+These scripts call the existing application composition and evaluation
+services; they do not contain a second implementation of scoring logic.
 
 ---
 

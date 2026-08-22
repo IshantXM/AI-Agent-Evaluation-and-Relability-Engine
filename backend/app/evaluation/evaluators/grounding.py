@@ -83,7 +83,7 @@ class GroundingEvaluator(BaseEvaluator):
 
             return self._build_result(
                 trace=trace,
-                verdict="NO_EVIDENCE",
+                verdict="FAIL",
                 score=0.0,
                 confidence=0.95,
                 findings=findings,
