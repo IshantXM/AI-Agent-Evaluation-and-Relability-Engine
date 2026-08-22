@@ -141,6 +141,23 @@ Backend API will be live at:
 - **API Base**: `http://127.0.0.1:8000`
 - **Interactive Swagger Docs**: `http://127.0.0.1:8000/docs`
 
+### Optional LLM Judge
+
+The built-in evaluators remain deterministic. To add a task-level LLM judge,
+configure an OpenAI-compatible chat-completions endpoint before starting the
+backend:
+
+```bash
+AEGIS_JUDGE_API_KEY=your-key
+AEGIS_JUDGE_MODEL=gpt-4o-mini
+# Optional for compatible providers:
+AEGIS_JUDGE_BASE_URL=https://api.openai.com/v1
+```
+
+The judge result is added to consensus and the saved evaluation record. If no
+`AEGIS_JUDGE_API_KEY` is set, evaluations run fully offline with the existing
+deterministic evaluators.
+
 ---
 
 ### 3. Frontend Setup

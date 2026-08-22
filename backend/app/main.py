@@ -162,9 +162,20 @@ class ScenarioGenerationRequest(BaseModel):
 
 async def _evaluate_and_persist_trace(trace_dict: dict, db: Session) -> dict:
     """Helper to persist trace, execute evaluation engine, and broadcast to frontend."""
+    # Normalize the minimum persisted shape before touching the database.
+    # Uploads commonly use `prompt` or omit optional trace fields entirely.
+    raw_task = trace_dict.get("task")
+    if raw_task is None:
+        trace_dict["task"] = {
+            "input": trace_dict.get("prompt") or "Autonomous Agent Task"
+        }
+    elif isinstance(raw_task, str):
+        trace_dict["task"] = {"input": raw_task}
+
     # 1. Fill default/calculated metrics if missing or zero
     metrics = trace_dict.get("metrics") or {}
-    events = trace_dict.get("events") or []
+    events = [event for event in (trace_dict.get("events") or []) if isinstance(event, dict)]
+    trace_dict["events"] = events
 
     if not metrics.get("latency_ms"):
         metrics["latency_ms"] = round(sum(e.get("latency_ms", 0.0) for e in events) or 500.0, 2)
@@ -286,9 +297,11 @@ async def upload_trace_file(
     try:
         content = await file.read()
         filename = file.filename or "trace.json"
+        if not content.strip():
+            raise HTTPException(status_code=422, detail="The uploaded trace file is empty")
 
         results = []
-        if filename.endswith(".jsonl"):
+        if filename.lower().endswith(".jsonl"):
             lines = content.decode("utf-8").strip().split("\n")
             for line in lines:
                 if line.strip():
@@ -320,6 +333,10 @@ async def upload_trace_file(
             "traces_evaluated_count": len(results),
             "results": results,
         }
+    except HTTPException:
+        raise
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=422, detail=f"Invalid JSON trace file: {exc.msg}")
     except Exception as exc:
         raise HTTPException(status_code=400, detail=f"Failed to parse and evaluate trace file: {str(exc)}")
 
