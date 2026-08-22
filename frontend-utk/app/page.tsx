@@ -59,8 +59,8 @@ interface GeneratedScenario {
   expected_behavior: string;
 }
 
-const API_BASE = "http://localhost:8000";
-const WS_URL = "ws://localhost:8000/ws/traces";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+const WS_URL = `${API_BASE.replace(/^http/, "ws")}/ws/traces`;
 
 export default function Dashboard() {
   const [traces, setTraces] = useState<Trace[]>([]);

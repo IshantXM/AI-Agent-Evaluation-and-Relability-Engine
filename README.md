@@ -9,6 +9,12 @@
 > **Submission for Problem Statement 4:** AI Agent Evaluation and Reliability Engine  
 > **Theme:** Agent Infrastructure, Testing, and Failure Prediction
 
+## Submission Links
+
+- **Prototype:** Not hosted yet. Run locally using the instructions below, or replace this line with the deployed dashboard URL before submission.
+- **Demo video:** Mandatory submission item. Add the final video link here; keep the walkthrough under 10 minutes.
+- **Source:** This GitHub repository contains the backend, dashboard, trace fixtures, evaluator tests, and deployment configuration.
+
 ---
 
 ## 🎯 Problem Context & Vision
@@ -125,7 +131,7 @@ Follow these steps to run the complete system locally:
 cd backend
 
 # 2. Install dependencies
-pip install -r requirements.txt
+pip install -r ../requirements.txt
 
 # 3. Configure Environment Variables
 # Copy example env file
@@ -133,6 +139,7 @@ cp .env.example .env
 
 # Edit .env with your PostgreSQL credentials (or leave default for local SQLite):
 # DATABASE_URL=postgresql://postgres:password@localhost:5432/Aegis
+# CORS_ORIGINS=http://localhost:3000
 
 # 4. Run database migrations & start FastAPI server
 python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
@@ -169,10 +176,31 @@ cd frontend-utk
 # Install dependencies
 npm install
 
+# Optional: copy .env.local.example to .env.local and set the remote API URL
+# NEXT_PUBLIC_API_BASE_URL=https://your-api.example.com
+
 # Start the Next.js development server
 npm run dev
 ```
 Open your browser at **`http://localhost:3000`** to view the live dashboard.
+
+For remote teams, deploy the backend and frontend separately. Set
+`NEXT_PUBLIC_API_BASE_URL` to the public backend URL and set backend
+`CORS_ORIGINS` to the public frontend URL (comma-separated values are allowed).
+The frontend derives its WebSocket URL from the API URL, so trace events and
+reports continue to stream remotely.
+
+### Functional Prototype Walkthrough
+
+1. Start the backend and frontend.
+2. Upload a `.json` or `.jsonl` agent trace from the dashboard.
+3. Review the six evaluator dimensions, failures, reliability score, and regression data.
+4. Open the Scenario Generator tab to create realistic and adversarial test cases.
+5. Configure the optional LLM judge to compare model-based judgment with deterministic evaluators.
+
+This directly demonstrates scenario generation, trace replay, failure
+classification, safety testing, and reliability scorecards from the hackathon
+problem statement.
 
 ---
 
