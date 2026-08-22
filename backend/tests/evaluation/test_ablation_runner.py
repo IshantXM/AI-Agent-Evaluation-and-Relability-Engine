@@ -51,6 +51,18 @@ def build_registry() -> EvaluatorRegistry:
     return registry
 
 
+class FailingAblationOrchestrator(EvaluationOrchestrator):
+    def __init__(self, registry: EvaluatorRegistry) -> None:
+        super().__init__(registry)
+        self.calls = 0
+
+    async def evaluate(self, trace, evaluators=None):
+        self.calls += 1
+        if self.calls > 1:
+            raise ValueError("deliberate ablation failure")
+        return await super().evaluate(trace, evaluators=evaluators)
+
+
 @pytest.mark.asyncio
 async def test_ablation_runs_one_case_per_evaluator():
     trace = load_trace("correct_trace.json")
@@ -113,7 +125,9 @@ async def test_ablation_results_are_completed():
     assert all(
         result.status == "COMPLETED"
         for result in report.results
+        if result.ablated_score is not None
     )
+    assert any(result.status == "FAILED" for result in report.results)
 
 
 @pytest.mark.asyncio
@@ -129,6 +143,9 @@ async def test_ablation_scores_are_bounded():
     report = await runner.run(trace)
 
     for result in report.results:
+        if result.status == "FAILED":
+            assert result.ablated_score is None
+            continue
         assert result.ablated_score is not None
         assert 0.0 <= result.ablated_score <= 1.0
 
@@ -219,3 +236,58 @@ async def test_sequential_and_parallel_execution_match():
     }
 
     assert parallel_scores == sequential_scores
+
+
+@pytest.mark.asyncio
+async def test_ablation_execution_failure_is_failed_result():
+    trace = load_trace("correct_trace.json")
+    runner = AblationRunner(
+        FailingAblationOrchestrator(build_registry())
+    )
+
+    report = await runner.run(trace, evaluators=["safety"])
+    result = report.results[0]
+
+    assert result.status == "FAILED"
+    assert result.ablated_score is None
+    assert result.score_delta is None
+    assert result.relative_impact is None
+    assert "ValueError" in (result.error or "")
+
+
+@pytest.mark.asyncio
+async def test_duplicate_evaluator_is_rejected_before_baseline():
+    trace = load_trace("correct_trace.json")
+    runner = AblationRunner(EvaluationOrchestrator(build_registry()))
+
+    with pytest.raises(ValueError, match="unique"):
+        await runner.run(trace, evaluators=["safety", "safety"])
+
+
+@pytest.mark.asyncio
+async def test_unknown_evaluator_is_rejected_before_baseline():
+    trace = load_trace("correct_trace.json")
+    runner = AblationRunner(EvaluationOrchestrator(build_registry()))
+
+    with pytest.raises(ValueError, match="Unknown"):
+        await runner.run(trace, evaluators=["does_not_exist"])
+
+
+@pytest.mark.asyncio
+async def test_repeated_trials_store_summary_statistics():
+    trace = load_trace("correct_trace.json")
+    runner = AblationRunner(EvaluationOrchestrator(build_registry()))
+
+    report = await runner.run(
+        trace,
+        evaluators=["correctness", "safety"],
+        trials=3,
+    )
+    result = report.results[0]
+
+    assert result.status == "COMPLETED"
+    assert result.trial_count == 3
+    assert len(result.trial_results) == 3
+    assert result.mean_score == result.ablated_score
+    assert result.standard_deviation == 0.0
+    assert result.minimum_score == result.maximum_score

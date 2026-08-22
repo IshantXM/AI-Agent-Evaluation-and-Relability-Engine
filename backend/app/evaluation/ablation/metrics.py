@@ -55,7 +55,7 @@ def classify_impact(
 def calculate_relative_impact(
     baseline_score: float,
     ablated_score: float,
-) -> float:
+) -> float | None:
     """
     Calculate relative percentage change.
 
@@ -72,7 +72,9 @@ def calculate_relative_impact(
     """
 
     if baseline_score == 0:
-        return 0.0
+        # The relative change divides by the baseline, so it is undefined
+        # when the baseline denominator is zero.
+        return None
 
     return round(
         (ablated_score - baseline_score)
@@ -97,6 +99,7 @@ def rank_ablation_results(
         for result in results
         if result.status == "COMPLETED"
         and result.score_delta is not None
+        and result.relative_impact is not None
     ]
 
     return sorted(
@@ -135,6 +138,7 @@ def least_impactful_evaluator(
         for result in results
         if result.status == "COMPLETED"
         and result.score_delta is not None
+        and result.relative_impact is not None
     ]
 
     if not completed:
