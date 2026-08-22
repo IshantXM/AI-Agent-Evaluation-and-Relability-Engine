@@ -14,9 +14,6 @@ load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 class Settings:
     database_url: str
     cors_origins: tuple[str, ...]
-    judge_api_key: str | None
-    judge_model: str
-    judge_base_url: str
 
 
 
@@ -30,10 +27,4 @@ settings = Settings(
         "postgresql://postgres:postgres@localhost:5432/aegis",
     ),
     cors_origins=_csv(os.getenv("CORS_ORIGINS", "http://localhost:3000")),
-    judge_api_key=os.getenv("AEGIS_JUDGE_API_KEY"),
-    judge_model=os.getenv("AEGIS_JUDGE_MODEL", "gemini-1.5-flash"),
-    judge_base_url=os.getenv(
-        "AEGIS_JUDGE_BASE_URL",
-        "https://generativelanguage.googleapis.com/v1beta/openai",
-    ).rstrip("/"),
 )

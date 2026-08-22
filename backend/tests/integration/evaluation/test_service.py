@@ -81,7 +81,6 @@ async def test_service_report_contains_required_dimensions():
 
     assert set(result.report.dimensions.keys()) == {
         "correctness",
-        "grounding",
         "tool_use",
         "safety",
         "robustness",

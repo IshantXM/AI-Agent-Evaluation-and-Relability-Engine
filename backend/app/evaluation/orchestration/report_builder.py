@@ -29,7 +29,6 @@ class ReportBuilder:
 
     DIMENSIONS = (
         "correctness",
-        "grounding",
         "tool_use",
         "safety",
         "robustness",
@@ -241,7 +240,6 @@ class ReportBuilder:
 
         category_map = {
             "correctness": "reasoning",
-            "grounding": "grounding",
             "tool_use": "tool_execution",
             "safety": "safety",
             "robustness": "robustness",

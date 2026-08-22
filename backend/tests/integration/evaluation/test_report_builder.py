@@ -53,7 +53,6 @@ async def test_report_contains_all_dimensions():
 
     assert set(report.dimensions.keys()) == {
         "correctness",
-        "grounding",
         "tool_use",
         "safety",
         "robustness",

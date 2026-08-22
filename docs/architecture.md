@@ -9,12 +9,11 @@ flowchart TD
   B --> C[Trace Contract]
   C --> D[Evaluation Orchestrator]
   D --> E[Correctness]
-  D --> F[Grounding]
   D --> G[Tool Use]
   D --> H[Safety]
   D --> I[Robustness]
   D --> J[Efficiency]
-  E --> K[Critic / Optional LLM Judge]
+  E --> K[Critic Consensus]
   F --> K
   G --> K
   H --> K

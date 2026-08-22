@@ -19,7 +19,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from .config import settings
 from .evaluation.core.models import (
     AgentTrace,
     TaskDefinition,
@@ -29,11 +28,9 @@ from .evaluation.core.models import (
 from .evaluation.core.registry import EvaluatorRegistry
 from .evaluation.evaluators.correctness import CorrectnessEvaluator
 from .evaluation.evaluators.efficiency import EfficiencyEvaluator
-from .evaluation.evaluators.grounding import GroundingEvaluator
 from .evaluation.evaluators.robustness import RobustnessEvaluator
 from .evaluation.evaluators.safety import SafetyEvaluator
 from .evaluation.evaluators.tool_use import ToolUseEvaluator
-from .evaluation.judges.llm_judge import configured_llm_judge
 from .evaluation.orchestration import EvaluationOrchestrator, EvaluationService
 
 # ------------------------------------------------------------------
@@ -43,7 +40,6 @@ from .evaluation.orchestration import EvaluationOrchestrator, EvaluationService
 
 _registry = EvaluatorRegistry()
 _registry.register(CorrectnessEvaluator())
-_registry.register(GroundingEvaluator())
 _registry.register(ToolUseEvaluator())
 _registry.register(SafetyEvaluator())
 _registry.register(RobustnessEvaluator())
@@ -52,7 +48,6 @@ _registry.register(EfficiencyEvaluator())
 _orchestrator = EvaluationOrchestrator(_registry)
 _service = EvaluationService(
     orchestrator=_orchestrator,
-    llm_judge=configured_llm_judge(settings),
 )
 
 

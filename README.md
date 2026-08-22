@@ -24,9 +24,9 @@ application. It does not launch arbitrary agents, execute tools on their
 behalf, or provide a sandbox. The trace collector is an SDK utility for code
 that wants to record an execution; the API accepts already-produced traces.
 
-Given a trace, Aegis normalizes and persists it, runs six deterministic
-evaluators, optionally asks a configured Gemini judge for a task-level review,
-calculates consensus and reliability, and builds a versioned report. Benchmark,
+Given a trace, Aegis normalizes and persists it, runs five evidence-backed
+deterministic evaluators, calculates consensus and reliability, and builds a
+versioned report. Benchmark,
 adversarial, ablation, and attribution components are available as separate
 evaluation subsystems.
 
@@ -47,7 +47,6 @@ evaluation subsystems.
 
 - **Multi-Dimensional Evaluator Suite**:
   - 🎯 **Correctness**: Output verification against ground truth, task constraints, and schema conformance.
-  - ⚓ **Grounding & Factuality**: Hallucination detection verifying claims against execution context and retrieved documents.
   - 🛠️ **Tool Usage**: Accuracy of tool selection, argument parameter validation, and recovery handling.
   - 🛡️ **Safety & Policy**: Harmful content detection, prompt injection resilience, and policy compliance.
   - 🧪 **Robustness & Perturbation**: Resilience testing against adversarial inputs and non-deterministic variations.
@@ -155,22 +154,6 @@ Backend API will be live at:
 - **API Base**: `http://127.0.0.1:8000`
 - **Interactive Swagger Docs**: `http://127.0.0.1:8000/docs`
 
-### Optional Gemini LLM Judge
-
-The built-in evaluators remain deterministic. To add a task-level Gemini judge,
-configure Gemini's OpenAI-compatible chat-completions endpoint before starting
-the backend:
-
-```bash
-AEGIS_JUDGE_API_KEY=your-key
-AEGIS_JUDGE_MODEL=gemini-1.5-flash
-AEGIS_JUDGE_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
-```
-
-The judge result is added to consensus and the saved evaluation record. If no
-`AEGIS_JUDGE_API_KEY` is set, evaluations run fully offline with the existing
-deterministic evaluators.
-
 ---
 
 ### 3. Frontend Setup
@@ -200,9 +183,8 @@ reports continue to stream remotely.
 
 1. Start the backend and frontend.
 2. Upload a `.json` or `.jsonl` agent trace from the dashboard.
-3. Review the six evaluator dimensions, failures, reliability score, and regression data.
+3. Review the five evidence-backed evaluator dimensions, failures, reliability score, and regression data.
 4. Open the Scenario Generator tab to create realistic and adversarial test cases.
-5. Configure the optional Gemini judge to review deterministic evaluator evidence and influence consensus/reliability.
 
 This demonstrates trace ingestion, scenario metadata generation, evaluator
 analysis, safety testing, failure attribution, and reliability scorecards from

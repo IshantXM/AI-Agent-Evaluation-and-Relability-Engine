@@ -16,6 +16,7 @@ import {
   Layers,
 } from "lucide-react";
 import EvaluationPanel, { EvaluationRecord } from "./EvaluationPanel";
+import { jsPDF } from "jspdf";
 
 interface TraceEvent {
   event_id: string;
@@ -57,6 +58,10 @@ interface GeneratedScenario {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 const WS_URL = `${API_BASE.replace(/^http/, "ws")}/ws/traces`;
+
+function formatPercent(value: number | null | undefined): string {
+  return value === null || value === undefined ? "N/A" : `${Math.round(value * 100)}%`;
+}
 
 export default function Dashboard() {
   const [traces, setTraces] = useState<Trace[]>([]);
@@ -172,14 +177,53 @@ export default function Dashboard() {
   };
 
   const downloadReport = (evaluation: EvaluationRecord) => {
-    const jsonStr = JSON.stringify(evaluation, null, 2);
-    const blob = new Blob([jsonStr], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `Aegis_Reliability_Report_${evaluation.run_id}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const pdf = new jsPDF();
+    const report = evaluation.report;
+    let y = 20;
+
+    pdf.setFontSize(18);
+    pdf.text("Aegis Reliability Report", 20, y);
+    y += 12;
+    pdf.setFontSize(10);
+    pdf.text(`Run: ${evaluation.run_id}`, 20, y);
+    y += 6;
+    pdf.text(`Agent: ${evaluation.agent_id} (${evaluation.agent_version})`, 20, y);
+    y += 10;
+    pdf.setFontSize(13);
+    pdf.text(`Overall score: ${formatPercent(evaluation.overall_score)}`, 20, y);
+    y += 7;
+    pdf.setFontSize(10);
+    pdf.text(`Reliability: ${evaluation.reliability_status ?? "PENDING"}`, 20, y);
+    y += 12;
+    pdf.setFontSize(12);
+    pdf.text("Evaluator results", 20, y);
+    y += 8;
+    pdf.setFontSize(10);
+    for (const result of evaluation.evaluations) {
+      pdf.text(`${result.evaluator}: ${result.verdict} | score ${formatPercent(result.score)} | confidence ${formatPercent(result.confidence)}`, 24, y);
+      y += 6;
+      if (y > 275) {
+        pdf.addPage();
+        y = 20;
+      }
+    }
+    if (report?.failures?.length) {
+      y += 6;
+      pdf.setFontSize(12);
+      pdf.text("Failures", 20, y);
+      y += 8;
+      pdf.setFontSize(10);
+      for (const failure of report.failures) {
+        const lines = pdf.splitTextToSize(`- ${failure.description}`, 165);
+        pdf.text(lines, 24, y);
+        y += lines.length * 5 + 2;
+        if (y > 275) {
+          pdf.addPage();
+          y = 20;
+        }
+      }
+    }
+    pdf.save(`Aegis_Reliability_Report_${evaluation.run_id}.pdf`);
   };
 
   const toggleTrace = (run_id: string) => {
@@ -266,7 +310,7 @@ export default function Dashboard() {
                     Drop Agent Trace or Benchmark File (.json / .jsonl)
                   </h3>
                   <p className="text-xs text-slate-400">
-                    Directly evaluate pre-recorded execution traces or batch test suites against all 6 evaluators.
+                    Directly evaluate pre-recorded execution traces or batch test suites against the active evaluators.
                   </p>
                 </div>
               </div>
