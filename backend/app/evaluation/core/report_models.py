@@ -25,7 +25,6 @@ RootCauseCategory = Literal[
     "retrieval",
     "tool_selection",
     "tool_execution",
-    "grounding",
     "instruction_following",
     "safety",
     "robustness",

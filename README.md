@@ -85,7 +85,6 @@ evaluation subsystems.
 ┌─────────────────────────────────────────────────────────────┐
 │ 2. PARALLEL EVALUATOR ENGINE                                │
 │    ├─► Correctness Evaluator                                │
-│    ├─► Grounding & Hallucination Evaluator                  │
 │    ├─► Tool Call Evaluator                                  │
 │    ├─► Safety & Policy Evaluator                            │
 │    ├─► Robustness & Adversarial Evaluator                   │

@@ -33,7 +33,7 @@ from backend.app.evaluation.ablation import AblationRunner
 
 report = await AblationRunner(orchestrator).run(
 		trace,
-		evaluators=["correctness", "grounding", "tool_use", "safety"],
+		 evaluators=["correctness", "tool_use", "safety"],
 		trials=3,
 		parallel=True,
 		max_concurrency=4,

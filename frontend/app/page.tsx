@@ -461,7 +461,7 @@ export default function Dashboard() {
                                 className="flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 transition font-medium"
                               >
                                 <Download className="w-3.5 h-3.5" />
-                                Export Report (JSON)
+                                Export Report (PDF)
                               </button>
                             )}
                           </div>
