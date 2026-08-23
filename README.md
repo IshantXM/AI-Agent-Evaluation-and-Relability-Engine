@@ -11,9 +11,9 @@
 
 ## Submission Links
 
-- **Prototype:** Not hosted yet. Run locally using the instructions below, or replace this line with the deployed dashboard URL before submission.
-- **Demo video:** Mandatory submission item. Add the final video link here; keep the walkthrough under 10 minutes.
-- **Source:** This GitHub repository contains the backend, dashboard, trace fixtures, evaluator tests, and deployment configuration.
+- **GitHub Repository:** [https://github.com/IshantXM/AI-Agent-Evaluation-and-Relability-Engine](https://github.com/IshantXM/AI-Agent-Evaluation-and-Relability-Engine)
+- **Prototype:** Run locally using the instructions below.
+- **Demo Video:** *(Add link here)*
 
 ---
 
@@ -125,37 +125,42 @@ Follow these steps to run the complete system locally:
 ### 1. Prerequisites
 - **Python 3.11+** installed
 - **Node.js 18+** & npm installed
-- **PostgreSQL 16+**
+- **PostgreSQL 16+** running locally with a database named `Aegis`
 
 ---
 
-### 2. Backend Setup
+### 2. Clone the Repository
 
 ```bash
-# 1. Navigate to backend directory
+git clone https://github.com/IshantXM/AI-Agent-Evaluation-and-Relability-Engine.git
+cd AI-Agent-Evaluation-and-Relability-Engine
+```
+
+---
+
+### 3. Backend Setup
+
+```bash
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Configure environment variables
 cd backend
-
-# 2. Install dependencies
-pip install -r ../requirements.txt
-
-# 3. Configure Environment Variables
-# Copy example env file
 cp .env.example .env
-
 # Edit .env with your PostgreSQL credentials:
-# DATABASE_URL=postgresql://postgres:password@localhost:5432/Aegis
-# CORS_ORIGINS=http://localhost:3000
+#   DATABASE_URL=postgresql://postgres:yourpassword@localhost:5432/Aegis
 
-# 4. Run database migrations & start FastAPI server
+# Start the FastAPI server
 python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
+
 Backend API will be live at:
 - **API Base**: `http://127.0.0.1:8000`
 - **Interactive Swagger Docs**: `http://127.0.0.1:8000/docs`
 
 ---
 
-### 3. Frontend Setup
+### 4. Frontend Setup
 
 ```bash
 # In a new terminal, navigate to the frontend directory
@@ -164,30 +169,65 @@ cd frontend
 # Install dependencies
 npm install
 
-# Optional: copy .env.local.example to .env.local and set the remote API URL
-# NEXT_PUBLIC_API_BASE_URL=https://your-api.example.com
-
 # Start the Next.js development server
 npm run dev
 ```
+
 Open your browser at **`http://localhost:3000`** to view the live dashboard.
 
-For remote teams, deploy the backend and frontend separately. Set
-`NEXT_PUBLIC_API_BASE_URL` to the public backend URL and set backend
-`CORS_ORIGINS` to the public frontend URL (comma-separated values are allowed).
-The frontend derives its WebSocket URL from the API URL, so trace events and
-reports continue to stream remotely.
+---
+
+### 5. Test with Sample Traces
+
+Two pre-built test traces are provided in `backend/tests/testss/`:
+
+```bash
+# Upload the elite trace (designed to score 100% on all evaluators)
+curl -X POST http://localhost:8000/api/traces/upload \
+  -F "file=@backend/tests/testss/aegis_elite_trace.json"
+
+# Upload the DevOps deployment trace (realistic multi-event scenario)
+curl -X POST http://localhost:8000/api/traces/upload \
+  -F "file=@backend/tests/testss/aegis_test_trace.json"
+```
+
+**PowerShell alternative:**
+```powershell
+# Elite trace
+Invoke-RestMethod -Uri http://localhost:8000/api/traces/upload -Method POST -Form @{file = Get-Item backend\tests\testss\aegis_elite_trace.json}
+
+# DevOps trace
+Invoke-RestMethod -Uri http://localhost:8000/api/traces/upload -Method POST -Form @{file = Get-Item backend\tests\testss\aegis_test_trace.json}
+```
+
+Or simply **drag & drop** the JSON files into the dashboard at `http://localhost:3000`.
+
+---
+
+### 6. Run Test Suite
+
+```bash
+# Run all backend tests
+python -m pytest -q
+
+# Compile check
+python -m compileall backend
+```
+
+---
 
 ### Functional Prototype Walkthrough
 
-1. Start the backend and frontend.
-2. Upload a `.json` or `.jsonl` agent trace from the dashboard.
-3. Review the five evidence-backed evaluator dimensions, failures, reliability score, and regression data.
-4. Open the Scenario Generator tab to create realistic and adversarial test cases.
+1. Start the backend (`uvicorn`) and frontend (`npm run dev`).
+2. Open `http://localhost:3000` — dashboard shows "No traces recorded yet".
+3. Upload a `.json` trace file via the drag-and-drop dropzone or the "Choose Trace File" button.
+4. Watch the trace appear in real-time with the full evaluation scorecard:
+   - Five evaluator dimensions (Correctness, Tool Use, Safety, Robustness, Efficiency)
+   - Overall reliability score and status (RELIABLE / DEGRADED / UNRELIABLE)
+   - Agent execution timeline with event-by-event breakdown
+5. Export the evaluation report as a PDF.
 
-This demonstrates trace ingestion, scenario metadata generation, evaluator
-analysis, safety testing, failure attribution, and reliability scorecards from
-the hackathon problem statement.
+---
 
 ### Documentation
 
@@ -225,43 +265,12 @@ correctness or safety.
 
 ---
 
-### 4. Run Test Suite & Simulations
-
-#### A. Run All Backend Tests
-```bash
-python -m pytest -q
-python -m compileall backend
-```
-
-#### B. Run Simulated Agent Execution
-```bash
-# In the project root
-python run_mock_agent.py
-```
-This will:
-1. Simulate an external agent trace with real-time spans.
-2. Automatically calculate exact latency, tokens, tool calls, and costs.
-3. Ingest the trace and run the full evaluation engine.
-4. Broadcast live events to the dashboard at `http://localhost:3000`.
-
-#### C. Run the Service Scripts
-
-```bash
-python scripts/run_evaluation.py backend/tests/fixtures/traces/correct_trace.json
-python scripts/run_benchmark.py
-python scripts/run_ablation.py backend/tests/fixtures/traces/correct_trace.json
-```
-
-These scripts call the existing application composition and evaluation
-services; they do not contain a second implementation of scoring logic.
-
----
-
 ## 📡 API Reference Summary
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `POST` | `/api/traces/ingest` | Ingest raw trace, evaluate across all dimensions, and persist |
+| `POST` | `/api/traces/ingest` | Ingest raw trace JSON, evaluate across all dimensions, and persist |
+| `POST` | `/api/traces/upload` | Upload a `.json` or `.jsonl` trace file for batch evaluation |
 | `GET` | `/api/traces` | List all recorded execution traces |
 | `GET` | `/api/evaluations` | List all evaluated reliability records |
 | `GET` | `/api/evaluations/{run_id}` | Get complete evaluation report for a specific run |

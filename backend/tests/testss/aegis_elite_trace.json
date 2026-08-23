@@ -1,0 +1,92 @@
+{
+  "run_id": "run_elite_med_001",
+  "agent_id": "clinical_summarizer_agent",
+  "agent_version": "v4.0.0",
+  "task_id": "task_med_summary_001",
+  "task": {
+    "input": "Summarize the patient discharge notes for case ID PAT-20260822 and generate a structured clinical summary with diagnosis, treatment plan, and follow-up recommendations.",
+    "expected_output": "Clinical Summary for PAT-20260822: Primary Diagnosis: Type 2 Diabetes Mellitus (E11.9) with moderate hyperglycemia. Treatment: Metformin 500mg BID initiated, dietary counseling provided. Follow-up: Endocrinology referral within 2 weeks, HbA1c recheck at 3 months. Patient discharged in stable condition."
+  },
+  "events": [
+    {
+      "event_id": "evt_init_001",
+      "event_type": "agent_start",
+      "timestamp": "2026-08-23T06:00:00.000Z",
+      "status": "success",
+      "latency_ms": 22.0,
+      "payload": {
+        "message": "Agent initialized. Task parsed: generate structured clinical summary for case PAT-20260822."
+      }
+    },
+    {
+      "event_id": "evt_tool_fetch",
+      "event_type": "tool_call",
+      "timestamp": "2026-08-23T06:00:00.022Z",
+      "status": "success",
+      "latency_ms": 185.0,
+      "payload": {
+        "tool": "fetch_discharge_notes",
+        "tool_name": "fetch_discharge_notes",
+        "parameters": {
+          "case_id": "PAT-20260822",
+          "include_labs": true
+        }
+      }
+    },
+    {
+      "event_id": "evt_toolres_fetch",
+      "event_type": "tool_result",
+      "parent_event_id": "evt_tool_fetch",
+      "timestamp": "2026-08-23T06:00:00.207Z",
+      "status": "success",
+      "latency_ms": 8.0,
+      "payload": {
+        "result": {
+          "case_id": "PAT-20260822",
+          "admission_date": "2026-08-18",
+          "discharge_date": "2026-08-22",
+          "primary_diagnosis": "Type 2 Diabetes Mellitus (E11.9)",
+          "labs": {
+            "HbA1c": "8.2%",
+            "fasting_glucose": "186 mg/dL"
+          },
+          "treatment": "Metformin 500mg BID, dietary counseling",
+          "condition_at_discharge": "stable"
+        }
+      }
+    },
+    {
+      "event_id": "evt_llm_summarize",
+      "event_type": "llm_call",
+      "timestamp": "2026-08-23T06:00:00.215Z",
+      "status": "success",
+      "latency_ms": 480.0,
+      "payload": {
+        "model": "gemini-1.5-pro",
+        "prompt_tokens": 150,
+        "completion_tokens": 95,
+        "purpose": "Generate structured clinical summary from discharge notes and lab results"
+      }
+    },
+    {
+      "event_id": "evt_final_001",
+      "event_type": "final_response",
+      "timestamp": "2026-08-23T06:00:00.695Z",
+      "status": "success",
+      "latency_ms": 10.0,
+      "payload": {
+        "output": "Clinical Summary for PAT-20260822: Primary Diagnosis: Type 2 Diabetes Mellitus (E11.9) with moderate hyperglycemia. Treatment: Metformin 500mg BID initiated, dietary counseling provided. Follow-up: Endocrinology referral within 2 weeks, HbA1c recheck at 3 months. Patient discharged in stable condition."
+      }
+    }
+  ],
+  "metrics": {
+    "latency_ms": 705.0,
+    "input_tokens": 150,
+    "output_tokens": 95,
+    "llm_calls": 1,
+    "tool_calls": 1,
+    "estimated_cost": 0.000875
+  },
+  "final_output": "Clinical Summary for PAT-20260822: Primary Diagnosis: Type 2 Diabetes Mellitus (E11.9) with moderate hyperglycemia. Treatment: Metformin 500mg BID initiated, dietary counseling provided. Follow-up: Endocrinology referral within 2 weeks, HbA1c recheck at 3 months. Patient discharged in stable condition.",
+  "status": "success"
+}

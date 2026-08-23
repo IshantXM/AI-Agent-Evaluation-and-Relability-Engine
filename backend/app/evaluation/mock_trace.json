@@ -1,0 +1,65 @@
+{
+  "run_id": "run_mock0001",
+  "agent_id": "falcon_code_agent",
+  "agent_version": "v2.1.0",
+  "task_id": "task_algo_001",
+  "task": {
+    "input": "Write an optimized C program for matrix multiplication.",
+    "expected_output": null
+  },
+  "events": [
+    {
+      "event_id": "evt_00000001",
+      "event_type": "agent_start",
+      "timestamp": "2026-08-23T06:10:00.000Z",
+      "status": "success",
+      "latency_ms": 150.0,
+      "payload": {
+        "message": "Agent booted and parsed task parameters."
+      }
+    },
+    {
+      "event_id": "evt_00000002",
+      "event_type": "tool_call",
+      "timestamp": "2026-08-23T06:10:00.150Z",
+      "status": "success",
+      "latency_ms": 250.0,
+      "payload": {
+        "tool": "search_algorithms",
+        "query": "cache-friendly matrix mult"
+      }
+    },
+    {
+      "event_id": "evt_00000003",
+      "event_type": "llm_call",
+      "timestamp": "2026-08-23T06:10:00.400Z",
+      "status": "success",
+      "latency_ms": 650.0,
+      "payload": {
+        "prompt_tokens": 45,
+        "completion_tokens": 120,
+        "model": "gemini-1.5-pro"
+      }
+    },
+    {
+      "event_id": "evt_00000004",
+      "event_type": "final_response",
+      "timestamp": "2026-08-23T06:10:01.050Z",
+      "status": "success",
+      "latency_ms": 50.0,
+      "payload": {
+        "output": "Matrix multiplication function compiled successfully."
+      }
+    }
+  ],
+  "metrics": {
+    "latency_ms": 1100.0,
+    "input_tokens": 45,
+    "output_tokens": 120,
+    "llm_calls": 1,
+    "tool_calls": 1,
+    "estimated_cost": 0.001935
+  },
+  "final_output": "Matrix multiplication function compiled successfully.",
+  "status": "success"
+}
