@@ -16,7 +16,15 @@ connect_args = (
     else {}
 )
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args=connect_args)
+if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args=connect_args)
+else:
+    engine = create_engine(
+        SQLALCHEMY_DATABASE_URL,
+        connect_args=connect_args,
+        pool_size=100,
+        max_overflow=50,
+    )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
