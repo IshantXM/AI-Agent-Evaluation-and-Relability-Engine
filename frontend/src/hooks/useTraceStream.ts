@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Trace, EvaluationRecord, WebSocketMessage } from "../types";
 import { api, WS_URL } from "../services/api";
 
@@ -26,6 +26,8 @@ export function useTraceStream(): UseTraceStreamState {
   const [uploading, setUploading] = useState<boolean>(false);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 
+  const isMountedRef = useRef(true);
+
   const fetchHistoricalData = useCallback(async () => {
     try {
       setError(null);
@@ -33,6 +35,8 @@ export function useTraceStream(): UseTraceStreamState {
         api.getTraces(),
         api.getEvaluations(),
       ]);
+
+      if (!isMountedRef.current) return;
 
       setTraces(fetchedTraces);
       const byRunId: Record<string, EvaluationRecord> = {};
@@ -45,38 +49,49 @@ export function useTraceStream(): UseTraceStreamState {
         setSelectedRunId(fetchedTraces[0].run_id);
       }
     } catch (err: any) {
-      console.error("Error loading historical trace records:", err);
-      setError(err.message || "Failed to load trace data from engine.");
+      if (!isMountedRef.current) return;
+      console.warn("Backend connectivity issue:", err.message);
+      setError(err.message || "Failed to connect to Aegis Engine.");
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
   }, [selectedRunId]);
 
   useEffect(() => {
+    isMountedRef.current = true;
     fetchHistoricalData();
 
     let ws: WebSocket | null = null;
-    let retryTimeout: NodeJS.Timeout;
+    let retryTimeout: NodeJS.Timeout | null = null;
+    let isCancelled = false;
 
     const connectWebSocket = () => {
+      if (isCancelled) return;
+
       try {
         ws = new WebSocket(WS_URL);
 
         ws.onopen = () => {
-          setConnected(true);
+          if (!isCancelled) setConnected(true);
         };
 
         ws.onclose = () => {
-          setConnected(false);
-          // Auto-reconnect after 3 seconds
-          retryTimeout = setTimeout(connectWebSocket, 3000);
+          if (!isCancelled) {
+            setConnected(false);
+            // Exponential/graceful backoff for reconnects (5 seconds)
+            retryTimeout = setTimeout(connectWebSocket, 5000);
+          }
         };
 
-        ws.onerror = (e) => {
-          console.warn("WebSocket stream notice:", e);
+        ws.onerror = () => {
+          // Silent handler to avoid console spam when backend is temporarily offline
+          if (!isCancelled) setConnected(false);
         };
 
         ws.onmessage = (event) => {
+          if (isCancelled) return;
           try {
             const message: WebSocketMessage = JSON.parse(event.data);
             if (message.event_type === "TRACE_INGESTED") {
@@ -91,16 +106,23 @@ export function useTraceStream(): UseTraceStreamState {
           }
         };
       } catch (e) {
-        console.warn("Could not initiate WebSocket:", e);
-        retryTimeout = setTimeout(connectWebSocket, 3000);
+        if (!isCancelled) {
+          retryTimeout = setTimeout(connectWebSocket, 5000);
+        }
       }
     };
 
     connectWebSocket();
 
     return () => {
-      if (ws) ws.close();
-      clearTimeout(retryTimeout);
+      isCancelled = true;
+      isMountedRef.current = false;
+      if (ws) {
+        ws.onclose = null;
+        ws.onerror = null;
+        ws.close();
+      }
+      if (retryTimeout) clearTimeout(retryTimeout);
     };
   }, [fetchHistoricalData]);
 

@@ -4,11 +4,28 @@ export const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhos
 export const WS_URL = `${API_BASE.replace(/^http/, "ws")}/ws/traces`;
 
 /**
+ * Helper to wrap fetch with meaningful connection error handling
+ */
+async function fetchWithHandling(url: string, options?: RequestInit): Promise<Response> {
+  try {
+    const res = await fetch(url, options);
+    return res;
+  } catch (err: any) {
+    if (err.name === "TypeError" && err.message?.includes("fetch")) {
+      throw new Error(
+        `Unable to connect to Aegis Backend at ${API_BASE}. Please ensure FastAPI is running (python -m uvicorn app.main:app --reload --port 8000).`
+      );
+    }
+    throw err;
+  }
+}
+
+/**
  * Robust API Client with standard error handling and typed responses.
  */
 export const api = {
   async getTraces(): Promise<Trace[]> {
-    const res = await fetch(`${API_BASE}/api/traces`, {
+    const res = await fetchWithHandling(`${API_BASE}/api/traces`, {
       headers: { "Content-Type": "application/json" },
     });
     if (!res.ok) {
@@ -18,7 +35,7 @@ export const api = {
   },
 
   async getEvaluations(): Promise<EvaluationRecord[]> {
-    const res = await fetch(`${API_BASE}/api/evaluations`, {
+    const res = await fetchWithHandling(`${API_BASE}/api/evaluations`, {
       headers: { "Content-Type": "application/json" },
     });
     if (!res.ok) {
@@ -28,7 +45,7 @@ export const api = {
   },
 
   async getEvaluation(runId: string): Promise<EvaluationRecord> {
-    const res = await fetch(`${API_BASE}/api/evaluations/${encodeURIComponent(runId)}`, {
+    const res = await fetchWithHandling(`${API_BASE}/api/evaluations/${encodeURIComponent(runId)}`, {
       headers: { "Content-Type": "application/json" },
     });
     if (!res.ok) {
@@ -46,7 +63,7 @@ export const api = {
     const formData = new FormData();
     formData.append("file", file);
 
-    const res = await fetch(`${API_BASE}/api/traces/upload`, {
+    const res = await fetchWithHandling(`${API_BASE}/api/traces/upload`, {
       method: "POST",
       body: formData,
     });
@@ -64,7 +81,7 @@ export const api = {
     tools?: string[];
     num_scenarios?: number;
   }): Promise<ScenarioGenerationResponse> {
-    const res = await fetch(`${API_BASE}/api/scenarios/generate`, {
+    const res = await fetchWithHandling(`${API_BASE}/api/scenarios/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(params),
